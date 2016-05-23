@@ -1,0 +1,74 @@
+#Activity Monitoring
+Corina Schusheim
+
+## Synopsis
+An individual wore a personal activity monitoring device from October to November 2012. This device measured the number of steps taken in five minute intervals throughout the day. The analysis is broken into several steps below.
+
+## Analysis
+
+```{r setoptions, echo=FALSE}
+knitr::opts_chunk$set(echo=TRUE, results="asis")
+library(dplyr)
+```
+
+### Read the data set.
+```{r readDataset}
+# Download, unzip and remove the compressed data file.
+dataFile<-"activity.csv"
+if (!file.exists(dataFile)){
+    url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+    zipFile<-"activity.zip"
+    download.file(url, zipFile, mode="wb")
+    unzip(zipFile)
+    file.remove(zipFile)
+}
+
+# Read the csv file into a table.
+activity<-read.csv(dataFile, header = TRUE, sep=",")
+```
+
+### Total Number of Steps Taken Each Day
+First let's take a look at the number of steps taken each day in a historgram.
+
+```{r stepsPerDay}
+# Calculate the sum, mean and median number of steps taken per day.
+days<- activity %>% group_by(date) %>% summarize(totalSteps=sum(steps, na.rm=TRUE))
+
+#Plot a histograms showing the total count of steps per day.
+hist(days$totalSteps,
+     breaks=25, 
+     main="Distribution of Steps per Day", 
+     xlab="Total Steps per Day", 
+     col="blue", 
+     xlim=c(0, max(days$totalSteps))
+)
+
+# Calculate the mean and median steps per day.
+meanSteps <- mean(days$totalSteps)
+medianSteps <- median(days$totalSteps)
+```
+
+The average number of steps per day is `r meanSteps`.
+
+The median number of steps per day is `r medianSteps`.
+
+### Average Daily Pattern
+Now let's look at the number of steps for each five minute interval in a day.
+
+```{r averageDailyPattern}
+# Calculate the sum, mean and median number of steps taken per day.
+intervals<- activity %>% group_by(interval) %>% summarize(averageSteps=mean(steps, na.rm=TRUE))
+
+#Plot the average number of steps per each time interval.
+plot(intervals, 
+     type="l",
+     xlab="Time Interval",
+     ylab="Average Number of Steps",
+     main="Average Number of Steps per Time Interval",
+     lwd=3
+)
+
+maxInterval<-intervals[intervals$averageSteps==max(intervals$averageSteps),1]
+```
+
+The time interval with the greatest average number of steps is `r maxInterval`.
