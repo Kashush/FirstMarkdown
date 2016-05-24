@@ -9,6 +9,7 @@ An individual wore a personal activity monitoring device from October to Novembe
 ```{r setoptions, echo=FALSE}
 knitr::opts_chunk$set(echo=TRUE, results="asis")
 library(dplyr)
+library(imputeMissings)
 ```
 
 ### Read the data set.
@@ -31,7 +32,7 @@ activity<-read.csv(dataFile, header = TRUE, sep=",")
 First let's take a look at the number of steps taken each day in a historgram.
 
 ```{r stepsPerDay}
-# Calculate the sum, mean and median number of steps taken per day.
+# Calculate the sum of steps taken per day.
 days<- activity %>% group_by(date) %>% summarize(totalSteps=sum(steps, na.rm=TRUE))
 
 #Plot a histograms showing the total count of steps per day.
@@ -72,3 +73,39 @@ maxInterval<-intervals[intervals$averageSteps==max(intervals$averageSteps),1]
 ```
 
 The time interval with the greatest average number of steps is `r maxInterval`.
+
+### Imputing Missing Values
+
+```{r MissingValues}
+# calculate the number of missing rows.
+missingCount <- sum(is.na(activity$steps))
+missingSteps<-sum(activity$steps, na.rm=TRUE)
+print(missingCount)
+print(missingSteps)
+
+# fullActivity<-impute(activity, object=NULL, method = "median/mode")
+# Fill in the missing values with the mean for that time interval.
+fullActivity<-activity
+
+
+fullMissingCount <- sum(is.na(fullActivity$steps))
+fullMissingSteps <- sum(fullActivity$steps)
+print(fullMissingCount)
+print(fullMissingSteps)
+
+# Calculate the sum of steps taken per day.
+fullDays<- fullActivity %>% group_by(date) %>% summarize(totalSteps=sum(steps, na.rm=TRUE))
+
+#Plot a histograms showing the total count of steps per day.
+hist(fullDays$totalSteps,
+     breaks=25, 
+     main="Distribution of Steps per Day", 
+     xlab="Total Steps per Day", 
+     col="blue", 
+     xlim=c(0, max(fullDays$totalSteps))
+)
+
+
+```
+
+The dataset has `r missingCount` rows that are missing the number of steps.
